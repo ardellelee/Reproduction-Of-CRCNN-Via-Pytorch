@@ -3,7 +3,8 @@ batch_train*
 
 
 # result folder
-model/
+saved_models/
 logs/
 
-
+# cache
+__pycache__

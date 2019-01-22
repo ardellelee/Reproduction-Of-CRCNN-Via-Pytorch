@@ -137,11 +137,4 @@ def vectorize(data, word_dict, max_len):
         dist1.append([pos(current_p - e1_p[1]) for current_p, _ in enumerate(sent)])
         dist2.append([pos(current_p - e2_p[1]) for current_p, _ in enumerate(sent)])
 
-        # dist1.append([(current_p - e1_p[1]) for current_p, _ in enumerate(sent)])
-        # dist2.append([(current_p - e2_p[1]) for current_p, _ in enumerate(sent)])
-    # print('dist1: len={}, max={}, min={}'.format(len(dist1), max([max(d) for d in dist1]), min([min(d) for d in dist1])))
-    # print('dist2: len={}, max={}, min={}'.format(len(dist2), max([max(d) for d in dist2]), min([min(d) for d in dist2])))
-
-    # return sents_vec, relations, e1_vec, e2_vec, dist1, dist2
     return sents_vec, relations, dist1, dist2
-
