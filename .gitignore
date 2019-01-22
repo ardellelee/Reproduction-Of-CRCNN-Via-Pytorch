@@ -1,0 +1,9 @@
+# tmp file and scripts
+batch_train*
+
+
+# result folder
+model/
+logs/
+
+

@@ -1,0 +1,2 @@
+timestamp,test_f1,optimizer,batch_size,epochs,lr,decay,n_filters,p_dropout,max_len,pos_embed_size,n_pos_embed,window,n_class
+,,,,,,,,,,,,,
