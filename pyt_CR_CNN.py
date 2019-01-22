@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.autograd import Variable
 import numpy as np
-import torch.nn.functional as F
+# import torch.nn.functional as F
 
 
 def one_hot(indices, depth, on_value=1, off_value=0):
@@ -23,17 +23,12 @@ def one_hot(indices, depth, on_value=1, off_value=0):
 
 
 class CR_CNN(nn.Module):
-    # def __init__(self, max_len, vocab_size, embedding_size, pos_embed_size,
-    #              pos_embed_num, slide_window, class_num,
-    #              num_filters, keep_prob):
-    def __init__(self, max_len, embedding, pos_embed_size,
+    def __init__(self, max_len, embedding_matrix, pos_embed_size,
                  pos_embed_num, slide_window, class_num,
                  num_filters, keep_prob):
         super(CR_CNN, self).__init__()
-        # self.dw = embedding_size
-        # self.vac_len = vocab_size
-        self.dw = embedding.shape[1]
-        self.vac_len = embedding.shape[0]
+        self.dw = embedding_matrix.shape[1]
+        self.vac_len = embedding_matrix.shape[0]
         self.dp = pos_embed_size
         self.d = self.dw + 2 * self.dp
         self.np = pos_embed_num
@@ -43,16 +38,26 @@ class CR_CNN(nn.Module):
         self.k = slide_window
         self.p = (self.k - 1) // 2
         self.n = max_len
-        self.x_embedding = nn.Embedding(self.vac_len, self.dw)
-        self.x_embedding.weight = nn.Parameter(torch.from_numpy(embedding))
+
+        # the layers
+        self.x_embedding = nn.Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1])
+        self.x_embedding.weight = nn.Parameter(torch.from_numpy(embedding_matrix))
         self.d1_embedding = nn.Embedding(self.np, self.dp)
         self.d2_embedding = nn.Embedding(self.np, self.dp)
         self.init_r = np.sqrt(6 / (self.nr + self.dc))
         self.rel_weight = nn.Parameter(self.init_r * (torch.rand(self.dc, self.nr) - 0.5))
-        self.dropout = nn.Dropout(self.keep_prob)
+        self.dropout = nn.Dropout(p=self.keep_prob)
         self.conv = nn.Conv2d(1, self.dc, (self.k, self.d), (1, self.d), (self.p, 0), bias=True)  # renewed
         self.tanh = nn.Tanh()
         self.max_pool = nn.MaxPool2d((1, self.n), (1, self.dc))
+        print('Settings:{}'.format(dict(dim_word=self.dw,
+                                        vac_len=self.vac_len,
+                                        dim_position=self.dp,
+                                        dim_all=self.d,
+                                        n_relation=self.nr,
+                                        max_len=self.n,
+                                        slide_window=self.k
+                                        )))
 
     def concat_input(self, x, dist1, dist2, is_training=True):
         x_embed = self.x_embedding(x)  # (bz, n, dw)
@@ -86,7 +91,7 @@ class CR_CNN(nn.Module):
 class PairwiseRankingLoss(nn.Module):
     def __init__(self, nr, pos_margin=2.5, neg_margin=0.5, gamma=2):
         super(PairwiseRankingLoss, self).__init__()
-        self.nr = nr
+        self.nr = nr        # number of relation class
         self.pos_margin = pos_margin
         self.neg_margin = neg_margin
         self.gamma = gamma
